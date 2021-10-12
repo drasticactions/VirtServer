@@ -11,4 +11,8 @@
     <PackageReference Include="IDNT.AppBasics.Virtualization.Libvirt" Version="1.0.9" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\VirtServer.Common\VirtServer.Common.csproj" />
+  </ItemGroup>
+
 </Project>

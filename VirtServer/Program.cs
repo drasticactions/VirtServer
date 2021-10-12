@@ -3,6 +3,7 @@ using IDNT.AppBasics.Virtualization.Libvirt.Events;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using VirtServer.Common;
 
 var connection = LibvirtConnection.Connect("qemu:///system");
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,11 @@ app.MapGet("/", () => "VirtServer");
 app.MapGet("/domains", async context => {
     await context.Response.WriteAsJsonAsync(connection.Domains, jsonSerializerOptions);
 });
+
+app.MapGet("/connection", async context => {
+    await context.Response.WriteAsJsonAsync(connection, jsonSerializerOptions);
+});
+
 
 app.MapGet("/domain", async context =>
 {
@@ -44,7 +50,9 @@ app.MapGet("/storagevolumes", async context => {
     await context.Response.WriteAsJsonAsync(connection.StorageVolumes, jsonSerializerOptions);
 });
 
+
 app.Run();
+
 
 public class LibvirtConnectionHub : Hub
 {
@@ -57,16 +65,16 @@ public class LibvirtConnectionHub : Hub
 
     private void Connection_StoragePoolRefreshEventReceived(object? sender, VirStoragePoolRefreshEventArgs e)
     {
-        this.Clients.All.SendAsync("StoragePoolRefreshEventReceived", e);
+        this.Clients.All.SendAsync("StoragePoolRefreshEventReceived", new StoragePoolRefreshEventCommand() { StoragePool = sender as LibvirtStoragePool, EventArgs = e });
     }
 
     private void Connection_DomainEventReceived(object sender, VirDomainEventArgs e)
     {
-        this.Clients.All.SendAsync("DomainEventReceived", e);
+        this.Clients.All.SendAsync("DomainEventReceived", new DomainEventCommand() { Domain = sender as LibvirtDomain, EventArgs = e });
     }
 
     private void Connection_StoragePoolLifecycleEventReceived(object? sender, VirStoragePoolLifecycleEventArgs e)
     {
-        this.Clients.All.SendAsync("StoragePoolLifecycleEventReceived", e);
+        this.Clients.All.SendAsync("StoragePoolLifecycleEventReceived", new StoragePoolLifecycleEventCommand() { StoragePool = sender as LibvirtStoragePool, EventArgs = e });
     }
 }
